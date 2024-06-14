@@ -15,6 +15,10 @@ import sys
 from copy import deepcopy
 from pathlib import Path
 
+#240614
+import matplotlib.pyplot as plt
+import networkx as nx
+
 import torch
 import torch.nn as nn
 
@@ -450,6 +454,44 @@ def parse_model(d, ch):
         ch.append(c2)
     return nn.Sequential(*layers), sorted(save)
 
+def visualize_model_architecture(model, input_size=(416, 416)):
+    # Create a dummy input to get the shape of each layer's output
+    dummy_input = torch.randn(1, 3, *input_size)
+
+    # Forward pass to collect layer shapes
+    layer_shapes = []
+    x = dummy_input
+    for layer in model.model:
+        x = layer(x)
+        layer_shapes.append(x.shape)
+
+    # Visualize the model architecture
+    plt.figure(figsize=(15, 10))
+    G = nx.DiGraph()
+
+    # Add nodes
+    for i, shape in enumerate(layer_shapes):
+        G.add_node(i, shape=str(shape))
+
+    # Add edges
+    for i in range(len(layer_shapes) - 1):
+        G.add_edge(i, i + 1)
+
+    # Position nodes using spring layout
+    pos = nx.spring_layout(G)
+
+    # Draw nodes
+    node_labels = nx.get_node_attributes(G, 'shape')
+    nx.draw_networkx_nodes(G, pos, node_size=7000, node_color='lightblue', alpha=0.9)
+    nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=10)
+
+    # Draw edges
+    nx.draw_networkx_edges(G, pos)
+
+    plt.title("YOLOv5n Model Architecture for 416x416 Input")
+    plt.axis('off')
+    plt.show()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -484,3 +526,14 @@ if __name__ == "__main__":
 
     else:  # report fused model summary
         model.fuse()
+
+    visualize_model_architecture(model)
+    model.to(device)
+    torch.onnx.export(
+        model,
+        im,
+        "yolov5_model.onnx",
+        export_params=True,
+        opset_version=11,
+        do_constant_folding=True
+    )

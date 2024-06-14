@@ -34,6 +34,8 @@ import os
 import platform
 import sys
 from pathlib import Path
+import glob
+import cv2
 
 import torch
 
@@ -69,7 +71,7 @@ from utils.torch_utils import select_device, smart_inference_mode
 @smart_inference_mode()
 def run(
     weights=ROOT / "yolov5s.pt",  # model path or triton URL
-    source=ROOT / "data/images",  # file/dir/URL/glob/screen/0(webcam)
+    source=ROOT / "data/nuscenes/test", #"data/images",  # file/dir/URL/glob/screen/0(webcam)
     data=ROOT / "data/coco128.yaml",  # dataset.yaml path
     imgsz=(640, 640),  # inference size (height, width)
     conf_thres=0.25,  # confidence threshold
@@ -305,6 +307,22 @@ def main(opt):
     """Executes YOLOv5 model inference with given options, checking requirements before running the model."""
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))
+    # here to modify
+    save_dir = "/home/jihyun/git/AUE8088-PA2/runs/detect/exp/"
+    img_files = glob.glob(os.path.join(save_dir,'*.jpg'))
+    if not img_files:
+        print("No image files found in the specified directory")
+        return
+    img_files.sort()
+    img = cv2.imread(img_files[0])
+    height, width, layers = img.shape
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    video = cv2.VideoWriter('output.mp4', fourcc, 10, (width, height))
+    for img_file in img_files:
+        img = cv2.imread(img_file)
+        video.write(img)
+    video.release()
+    print("The detected images were successfully converted to a video")
 
 
 if __name__ == "__main__":
