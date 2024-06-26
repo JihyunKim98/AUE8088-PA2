@@ -1227,7 +1227,7 @@ class LoadRGBTImagesAndLabels(LoadImagesAndLabels):
                     labels[:, 1:] = xywhn2xyxy(labels[:, 1:], ratio[0] * w, ratio[1] * h, padw=pad[0], padh=pad[1])
 
                 if self.augment:
-                    raise NotImplementedError('Please make data augmentation work!')
+                    # raise NotImplementedError('Please make data augmentation work!')  #246026
 
                     img, labels = random_perspective(
                         img,

@@ -72,24 +72,20 @@ class KAIST(COCO):
 
     def loadRes(self, resFile):
         """
-        Load result file and return a result api object.
-        :param   resFile (str)     : file name of result file
-        :return: res (obj)         : result api object
+        Load result file and validate against ground truth data.
         """
-
-        # If resFile is a text file, convert it to json
-        if type(resFile) == str and resFile.endswith('.txt'):
-            anns = self.txt2json(resFile)
-            _resFile = next(tempfile._get_candidate_names())
-            with open(_resFile, 'w') as f:
-                json.dump(anns, f, indent=4)
-            res = super().loadRes(_resFile)
-            os.remove(_resFile)
-        elif type(resFile) == str and resFile.endswith('.json'):
-            res = super().loadRes(resFile)
-        else:
-            raise Exception('[Error] Exception extension : %s \n' % resFile.split('.')[-1])
-
+        res = super().loadRes(resFile)
+    
+        # 결과 파일과 데이터셋의 이미지 ID 출력
+        annsImgIds = [ann['image_id'] for ann in res['annotations']]
+        datasetImgIds = self.getImgIds()
+    
+        print("Result file image IDs:", set(annsImgIds))
+        print("Dataset image IDs:", set(datasetImgIds))
+    
+        assert set(annsImgIds) == (set(annsImgIds) & set(datasetImgIds)), \
+            "Results do not correspond to current coco set"
+    
         return res
 
 
@@ -633,7 +629,7 @@ def evaluate(test_annotation_file: str, user_submission_file: str, phase_codenam
     metrics['MR_-2_iou60_night'] = MR_night[1]
     metrics['MR_-2_iou75_night'] = MR_night[2]
 
-    # # recall_all = 1 - eval_result['all'].eval['yy'][0][-1]
+    # recall_all = 1 - eval_result['all'].eval['yy'][0][-1]
     msg = f'\n########## Method: {method} ##########\n' \
         + f'MR_all: {metrics["MR_-2_iou50_all"] * 100:.2f}\n' \
         + f'MR_day: {metrics["MR_-2_iou50_day"] * 100:.2f}\n' \
@@ -642,7 +638,7 @@ def evaluate(test_annotation_file: str, user_submission_file: str, phase_codenam
         # + f'recall_all: {recall_all * 100:.2f}\n' \
     print(msg)
 
-    #return metrics
+    # return metrics
     return eval_result
 
 
@@ -675,12 +671,17 @@ def draw_all(eval_results, filename='figure.jpg'):
     axes[2].set_title('Night')
 
     filename += '' if filename.endswith('.jpg') or filename.endswith('.png') else '.jpg'
+
+    print (filename)
+    print ('save eval results')
+
     plt.savefig(filename)
+    plt.close(fig)  # Close the figure to free up memory
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='eval models')
-    parser.add_argument('--annFile', type=str, default='evaluation_script/KAIST_annotation.json',
+    parser.add_argument('--annFile', type=str, default='utils/eval/KAIST_annotation.json',
                         help='Please put the path of the annotation file. Only support json format.')
     parser.add_argument('--rstFiles', type=str, nargs='+', default=['evaluation_script/MLPD_result.json'],
                         help='Please put the path of the result file. Only support json, txt format.')

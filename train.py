@@ -25,6 +25,8 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from load_validation_data import load_validation_data
+
 try:
     import comet_ml  # must be imported before torch (if installed)
 except ImportError:
@@ -846,3 +848,7 @@ def run(**kwargs):
 if __name__ == "__main__":
     opt = parse_opt()
     main(opt)
+
+
+
+val_data = load_validation_data('path/to/val_data.csv', 'path/to/val_labels.csv')

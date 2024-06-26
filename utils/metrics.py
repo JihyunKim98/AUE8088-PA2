@@ -229,6 +229,58 @@ class ConfusionMatrix:
         for i in range(self.nc + 1):
             print(" ".join(map(str, self.matrix[i])))
 
+#240625
+# def bbox_iou(box1, box2, x1y1x2y2=True, CIoU=False, DIoU=False, GIoU=False, eps=1e-9):
+#     """
+#     Calculate Intersection Over Union (IoU) between box1 and box2
+#     :param box1: (tensor) bounding box 1 (shape: [4])
+#     :param box2: (tensor) bounding box 2 (shape: [4])
+#     :param x1y1x2y2: (bool) If True, boxes are in (x1, y1, x2, y2) format, else (x, y, w, h)
+#     :param CIoU: (bool) If True, calculate Complete IoU
+#     :param DIoU: (bool) If True, calculate Distance IoU
+#     :param GIoU: (bool) If True, calculate Generalized IoU
+#     :param eps: (float) epsilon to avoid division by zero
+#     :return: IoU score
+#     """
+#     # Convert boxes to (x1, y1, x2, y2) format
+#     if not x1y1x2y2:
+#         box1 = torch.cat((box1[:, :2] - box1[:, 2:] / 2, box1[:, :2] + box1[:, 2:] / 2), 1)
+#         box2 = torch.cat((box2[:, :2] - box2[:, 2:] / 2, box2[:, :2] + box2[:, 2:] / 2), 1)
+
+#     # Intersection area
+#     inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
+#     # Union Area
+#     w1, h1 = box1[:, 2] - box1[:, 0], box1[:, 3] - box1[:, 1]
+#     w2, h2 = box2[:, 2] - box2[:, 0], box2[:, 3] - box2[:, 1]
+#     union = w1 * h1 + w2 * h2 - inter + eps
+
+#     iou = inter / union  # IoU
+
+#     if CIoU or DIoU or GIoU:
+#         # Calculate convex (smallest enclosing box)
+#         convex = torch.max(box1[:, None, 2:], box2[:, 2:]) - torch.min(box1[:, None, :2], box2[:, :2])
+#         c = convex[:, :, 0] * convex[:, :, 1] + eps
+
+#         if GIoU:
+#             giou = iou - (c - union) / c
+#             return giou
+
+#         if DIoU or CIoU:
+#             # Calculate center distance
+#             rho2 = ((box2[:, None, :2] + box2[:, None, 2:]) / 2 - (box1[:, :2] + box1[:, 2:]) / 2).pow(2).sum(2)
+#             if DIoU:
+#                 diou = iou - rho2 / c
+#                 return diou
+
+#             if CIoU:
+#                 # Calculate aspect ratio
+#                 v = (4 / (math.pi ** 2)) * torch.pow((torch.atan(w2 / h2) - torch.atan(w1 / h1)), 2)
+#                 with torch.no_grad():
+#                     alpha = v / (1 - iou + v)
+#                 ciou = iou - (rho2 / c + v * alpha)
+#                 return ciou
+
+#     return iou
 
 def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7):
     """

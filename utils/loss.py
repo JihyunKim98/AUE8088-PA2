@@ -38,7 +38,7 @@ class BCEBlurWithLogitsLoss(nn.Module):
 
 class FocalLoss(nn.Module):
     # Wraps focal loss around existing loss_fcn(), i.e. criteria = FocalLoss(nn.BCEWithLogitsLoss(), gamma=1.5)
-    def __init__(self, loss_fcn, gamma=1.5, alpha=0.25):
+    def __init__(self, loss_fcn, gamma=1.5, alpha=0.25):  # gamma = 1.5 -> 2 240625
         """Initializes FocalLoss with specified loss function, gamma, and alpha values; modifies loss reduction to
         'none'.
         """
@@ -176,6 +176,13 @@ class ComputeLoss:
                     t = torch.full_like(pcls, self.cn, device=self.device)  # targets
                     t[range(n), tcls[i]] = self.cp
                     lcls += self.BCEcls(pcls, t)  # BCE
+
+                #240623
+                # # Adjust for "People" class
+                # people_idx = tcls[i] == 2  # Assuming "People" class is labeled as 2
+                # if people_idx.any():
+                #     iou[people_idx] = iou[people_idx] * 0.5 + 0.5 * torch.sigmoid(pcls[people_idx, 2])  # Adjust IoU for "People" class
+
 
                 # Append targets to text file
                 # with open('targets.txt', 'a') as file:

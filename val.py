@@ -152,6 +152,7 @@ def run(
     compute_loss=None,
     epoch=None,
 ):
+    
     # Initialize/load model and set device
     training = model is not None
     if training:  # called by train.py
@@ -211,6 +212,7 @@ def run(
             workers=workers,
             prefix=colorstr(f"{task}: "),
         )[0]
+
 
     seen = 0
     confusion_matrix = ConfusionMatrix(nc=nc)
@@ -376,6 +378,7 @@ def run(
             from pycocotools.coco import COCO
             from pycocotools.cocoeval import COCOeval
 
+            annotations_file_path = 'datasets/kaist-rgbt/annotations/KAIST_annotation.json' # 240624
             anno = COCO(anno_json)  # init annotations api
             pred = anno.loadRes(pred_json)  # init predictions api
             eval = COCOeval(anno, pred, "bbox")
